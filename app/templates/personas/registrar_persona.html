@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrar Persona</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<body>
+    <h1>Registrar Persona</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('personas.registrar_persona') }}" method="POST">
+        <div class="container">
+
+            <!-- Sección de datos principales -->
+            <div class="form-group">
+                <label for="nombres">Nombres:</label>
+                <input type="text" id="nombres" name="nombres" class="form-control" value="{{ request.form.get('nombres', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="apellidos">Apellidos:</label>
+                <input type="text" id="apellidos" name="apellidos" class="form-control" value="{{ request.form.get('apellidos', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo_documento">Tipo de Documento:</label>
+                <select id="tipo_documento" name="tipo_documento" class="form-control" required>
+                    <option value="" disabled selected>Selecciona un tipo de documento</option> <!-- Opción vacía por defecto -->
+                    {% for tipo in tipos_documento %}
+                        <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="nro_documento">Número de Documento:</label>
+                <input type="text" id="nro_documento" name="nro_documento" class="form-control" value="{{ request.form.get('nro_documento', '') }}" required>
+            </div>
+
+            <!-- Sección de datos adicionales -->
+            <div class="form-group">
+                <label for="correo">Dirección de Correo:</label>
+                <input type="email" id="correo" name="correo" class="form-control" value="{{ request.form.get('correo', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
+                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" value="{{ request.form.get('fecha_nacimiento', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="direccion">Dirección:</label>
+                <input type="text" id="direccion" name="direccion" class="form-control" value="{{ request.form.get('direccion', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ciudad">Ciudad:</label>
+                <input type="text" id="ciudad" name="ciudad" class="form-control" value="{{ request.form.get('ciudad', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telefono">Teléfono:</label>
+                <input type="text" id="telefono" name="telefono" class="form-control" value="{{ request.form.get('telefono', '') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="sexo">Sexo:</label>
+                <select name="sexo" id="sexo" class="form-control" required>
+                    <option value="" disabled selected>Selecciona un sexo</option> <!-- Opción vacía por defecto -->
+                    {% for sexo in sexos %}
+                        <option value="{{ sexo.id }}">{{ sexo.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="estado_civil">Estado Civil:</label>
+                <select name="estado_civil" id="estado_civil" class="form-control" required>
+                    <option value="" disabled selected>Selecciona un estado civil</option> <!-- Opción vacía por defecto -->
+                    {% for estado in estados_civiles %}
+                        <option value="{{ estado.id }}">{{ estado.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="nacionalidad">Nacionalidad:</label>
+                <select name="nacionalidad" id="nacionalidad" class="form-control" required>
+                    <option value="" disabled selected>Selecciona una nacionalidad</option> <!-- Opción vacía por defecto -->
+                    {% for nacionalidad in nacionalidades %}
+                        <option value="{{ nacionalidad.id }}">{{ nacionalidad.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Sección de tipos de persona -->
+            <label>Tipos de Persona:</label><br>
+            {% for tipo in tipos_persona %}
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="tipos_persona" value="{{ tipo.id }}" id="tipo-{{ tipo.id }}"
+                    {% if tipo.id in request.form.getlist('tipos_persona') %}checked{% endif %}>
+                    <label class="form-check-label" for="tipo-{{ tipo.id }}">{{ tipo.nombre }}</label>
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary">Registrar</button>
+        </div>
+    </form>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

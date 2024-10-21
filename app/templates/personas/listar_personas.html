@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Personas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Listado de Personas</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Apellidos y Nombres</th>
+                    <th>Número de Documento</th>
+                    <th>Tipo de Documento</th>
+                    <th>Nacionalidad</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for persona, tipo_doc, nacionalidad in personas %}
+                <tr>
+                    <td>{{ persona.id }}</td>
+                    <td>{{ persona.apellido_nombre }}</td>
+                    <td>{{ persona.numero_documento }}</td> <!-- Asegúrate de que este campo exista -->
+                    <td>{{ tipo_doc.nombre }}</td> <!-- Ajusta según el nombre del campo -->
+                    <td>{{ nacionalidad.nombre }}</td> <!-- Ajusta según el nombre del campo -->
+                    <td>
+                        <a href="{{ url_for('editar_persona', id=persona.id) }}" class="btn btn-primary">Editar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
