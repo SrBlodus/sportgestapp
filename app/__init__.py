@@ -22,7 +22,7 @@ def create_app():
 
     with app.app_context():
         # Importar tus modelos aquí
-        from app.models import Persona, Sexo, Nacionalidad, EstadoCivil, User, Tutor, TipoPersona, TipoDocumento, Role, PersonaXTipoDoc, PersonaXTipo
+        from app.models import Persona, Estado, Sexo, Nacionalidad, EstadoCivil, User, Tutor, TipoPersona, TipoDocumento, Role, PersonaXTipoDoc, PersonaXTipo
 
         # Crear las tablas en la base de datos si no existen
         db.create_all()
@@ -107,18 +107,27 @@ def create_app():
             db.session.bulk_save_objects(roles)
             db.session.commit()
 
+        # Insertar valores en la tabla de estado si no existen
+        if not Estado.query.first():
+            estados = [
+                Estado(nombre='Activo'),
+                Estado(nombre='Inactivo'),
+                Estado(nombre='Reiniciar'),
+            ]
+            db.session.bulk_save_objects(estados)
+            db.session.commit()
+
         # Insertar personas "ADMIN" si no existe
         if not Persona.query.filter_by(nombres='ADMIN').first():
             admin_persona = Persona(
                 nombres='ADMIN',
                 apellidos='ADMIN',
-                apellido_nombre='ADMIN',
                 direccion='Calle Falsa 123',
                 ciudad='Asunción',
                 correo='admin@example.com',
                 fecha_nacimiento='1980-01-01',  # Fecha aleatoria
                 telefono=123456789,
-                estado=1,  # Activo
+                estado_id=Estado.query.filter_by(nombre='Activo').first().id,
                 sexo_id=Sexo.query.filter_by(nombre='Masculino').first().id,
                 nacionalidad_id=Nacionalidad.query.filter_by(nombre='Paraguay').first().id,
                 estado_civil_id=EstadoCivil.query.filter_by(nombre='Soltero').first().id
@@ -133,7 +142,7 @@ def create_app():
                 password_hash=generate_password_hash('adminpassword'),
                 role_id=Role.query.filter_by(nombre='Admin').first().id,
                 persona_id=Persona.query.filter_by(nombres='ADMIN').first().id,
-                estado=1  # Activo
+                estado_id=Estado.query.filter_by(nombre='Activo').first().id
             )
             db.session.add(admin_user)
             db.session.commit()

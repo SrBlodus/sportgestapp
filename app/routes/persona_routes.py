@@ -67,7 +67,6 @@ def registrar_persona():
         nueva_persona = Persona(
             nombres=nombres,
             apellidos=apellidos,
-            apellido_nombre=f"{apellidos}, {nombres}",  # Concatenación de apellidos y nombres
             correo=correo,
             fecha_nacimiento=fecha_nacimiento,
             direccion=direccion,

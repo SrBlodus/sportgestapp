@@ -10,5 +10,6 @@ from .tipo_documento import TipoDocumento
 from .tipo_persona import TipoPersona
 from .tutores import Tutor
 from .user import User
+from .estado import Estado
 
 
