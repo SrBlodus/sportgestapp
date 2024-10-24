@@ -40,9 +40,8 @@ def create_app():
         # Insertar valores en la tabla de tipo de documento si no existen
         if not TipoDocumento.query.first():
             tipos_documento = [
-                TipoDocumento(nombre='Cédula de Identidad Paraguaya'),
+                TipoDocumento(nombre='Cédula de Identidad Nacional'),
                 TipoDocumento(nombre='Pasaporte'),
-                TipoDocumento(nombre='Cédula de Identidad Extranjera')
             ]
             db.session.bulk_save_objects(tipos_documento)
             db.session.commit()
@@ -125,11 +124,10 @@ def create_app():
                 direccion='Calle Falsa 123',
                 ciudad='Asunción',
                 correo='admin@example.com',
-                fecha_nacimiento='1980-01-01',  # Fecha aleatoria
+                fecha_nacimiento='1980-01-01',
                 telefono=123456789,
                 estado_id=Estado.query.filter_by(nombre='Activo').first().id,
                 sexo_id=Sexo.query.filter_by(nombre='Masculino').first().id,
-                nacionalidad_id=Nacionalidad.query.filter_by(nombre='Paraguay').first().id,
                 estado_civil_id=EstadoCivil.query.filter_by(nombre='Soltero').first().id
             )
             db.session.add(admin_persona)

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app import db
-from app.models import EstadoCivil, Nacionalidad, Sexo
+from app.models import EstadoCivil, Nacionalidad, Sexo, Estado, estado
 from app.models.persona import Persona
 from app.models.persona_x_tipodoc import PersonaXTipoDoc
 from app.models.tipo_documento import TipoDocumento
@@ -8,6 +8,14 @@ from app.models.tipo_persona import TipoPersona
 from app.models.persona_x_tipo import PersonaXTipo
 
 persona_bp = Blueprint('personas', __name__, url_prefix='/personas')
+
+# Definir combinaciones de tipos de persona no permitidas
+COMBINACIONES_NO_PERMITIDAS = [
+    {"Alumno", "Profesor"},
+    {"Tutor", "Alumno"},
+    {"Alumno", "Operador"},
+    {"Profesor", "Operador"},
+]
 
 @persona_bp.route('/registrar', methods=['GET', 'POST'])
 def registrar_persona():
@@ -29,7 +37,7 @@ def registrar_persona():
 
         # Validaciones
         documento_existente = PersonaXTipoDoc.query.filter_by(
-            tipo_documento_id=tipo_documento_id, nro_documento=nro_documento
+            tipo_documento_id=tipo_documento_id, nro_documento=nro_documento,nacionalidad_id=nacionalidad_id
         ).first()
 
         if documento_existente:
@@ -63,6 +71,21 @@ def registrar_persona():
                 tipos_persona_seleccionados=tipos_persona_seleccionados
             ))
 
+        # Obtener nombres de los tipos de persona seleccionados
+        tipos_persona_nombres = [TipoPersona.query.get(tipo_id).nombre for tipo_id in tipos_persona_seleccionados]
+
+        # Verificar combinaciones no permitidas
+        tipos_seleccionados_set = set(tipos_persona_nombres)
+        for combinacion_no_permitida in COMBINACIONES_NO_PERMITIDAS:
+            if combinacion_no_permitida.issubset(tipos_seleccionados_set):
+                flash(f'No puedes seleccionar las opciones: {", ".join(combinacion_no_permitida)} al mismo tiempo.',
+                      'danger')
+                return render_template('personas/registrar_persona.html', **contexto_formulario(
+                    # Pasar valores al formulario para recargarlo con datos
+                ))
+
+        estado_activo = Estado.query.filter_by(nombre='Activo').first()
+
         # Guardar los datos en la base de datos
         nueva_persona = Persona(
             nombres=nombres,
@@ -74,8 +97,7 @@ def registrar_persona():
             telefono=telefono,
             sexo_id=sexo_id,
             estado_civil_id=estado_civil_id,
-            nacionalidad_id=nacionalidad_id,
-            estado=1
+            estado=estado_activo
         )
         db.session.add(nueva_persona)
         db.session.commit()
@@ -83,7 +105,8 @@ def registrar_persona():
         persona_doc = PersonaXTipoDoc(
             persona_id=nueva_persona.id,
             tipo_documento_id=tipo_documento_id,
-            nro_documento=nro_documento
+            nro_documento=nro_documento,
+            nacionalidad_id=nacionalidad_id
         )
         db.session.add(persona_doc)
         db.session.commit()
@@ -125,15 +148,37 @@ def contexto_formulario(nombres='', apellidos='', tipo_documento_id=None, nro_do
         'estados_civiles': EstadoCivil.query.all()
     }
 
-@persona_bp.route('/listar', methods=['GET'])
+
+@persona_bp.route('/listar', methods=['GET', 'POST'])
 def listar_personas():
-    personas = (
-        db.session.query(Persona, TipoDocumento, Nacionalidad)
-        .join(Persona.tipo_documento)  # Ajusta según tu relación
-        .join(Persona.nacionalidad)  # Ajusta según tu relación
-        .all()
-    )
-    return render_template('personas/listar_personas.html', personas=personas)
+    # Obtener el término de búsqueda si existe
+    termino_busqueda = request.args.get('q', '').lower()
+
+    # Concatenar apellidos y nombres en formato 'Apellido, Nombre'
+    personas = Persona.query.filter(
+        db.func.concat(Persona.apellidos, ', ', Persona.nombres).ilike(f"%{termino_busqueda}%")
+    ).all()
+
+    return render_template('personas/listar_personas.html', personas=personas, termino_busqueda=termino_busqueda)
+
+
+@persona_bp.route('/buscar_personas')
+def buscar_personas():
+    query = request.args.get('query', '')
+    if query:
+        # Realiza la búsqueda en la base de datos
+        personas = Persona.query.filter(
+            (Persona.nombres.like(f'%{query}%')) |
+            (Persona.apellidos.like(f'%{query}%'))
+        ).all()
+
+        # Combina apellidos y nombres y crea una lista para el JSON
+        resultados = [f"{persona.apellidos}, {persona.nombres}" for persona in personas]
+    else:
+        resultados = []
+
+    return jsonify(resultados)
+
 
 
 @persona_bp.route('/editar/<int:persona_id>', methods=['GET', 'POST'])

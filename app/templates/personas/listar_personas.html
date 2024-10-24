@@ -2,39 +2,73 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listado de Personas</title>
+    <title>Listar Personas</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 </head>
 <body>
-    <div class="container mt-5">
-        <h2>Listado de Personas</h2>
-        <table class="table table-bordered">
+    <div class="container">
+        <h1>Listar Personas</h1>
+
+
+        <!-- Cuadro de búsqueda -->
+        <form method="GET" action="{{ url_for('personas.listar_personas') }}">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" name="q" placeholder="Buscar por 'Apellido, Nombre'" value="{{ termino_busqueda }}" id="busqueda">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit">Buscar</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Tabla para listar las personas -->
+        <table class="table table-bordered table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Apellidos y Nombres</th>
-                    <th>Número de Documento</th>
-                    <th>Tipo de Documento</th>
-                    <th>Nacionalidad</th>
-                    <th>Acciones</th>
+                    <th>Nombre Completo</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th>Ciudad</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for persona, tipo_doc, nacionalidad in personas %}
-                <tr>
-                    <td>{{ persona.id }}</td>
-                    <td>{{ persona.apellido_nombre }}</td>
-                    <td>{{ persona.numero_documento }}</td> <!-- Asegúrate de que este campo exista -->
-                    <td>{{ tipo_doc.nombre }}</td> <!-- Ajusta según el nombre del campo -->
-                    <td>{{ nacionalidad.nombre }}</td> <!-- Ajusta según el nombre del campo -->
-                    <td>
-                        <a href="{{ url_for('editar_persona', id=persona.id) }}" class="btn btn-primary">Editar</a>
-                    </td>
-                </tr>
+            <tbody id="lista-personas">
+                {% for persona in personas %}
+                    <tr>
+                        <!-- Mostrar 'Apellido, Nombre' -->
+                        <td>{{ persona.apellidos }}, {{ persona.nombres }}</td>
+                        <td>{{ persona.correo }}</td>
+                        <td>{{ persona.telefono }}</td>
+                        <td>{{ persona.ciudad }}</td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+
+
+    <script>
+        document.getElementById('busqueda').addEventListener('input', function() {
+            let query = this.value;
+
+            fetch(`/buscar_personas?query=${query}`)  // Cambia a la ruta que estés usando
+                .then(response => response.json())
+                .then(data => {
+                    let resultadosDiv = document.getElementById('resultados');
+                    resultadosDiv.innerHTML = '';  // Limpiar resultados anteriores
+
+                    if (data.length > 0) {
+                        data.forEach(persona => {
+                            let div = document.createElement('div');
+                            div.textContent = persona;  // Asegúrate de formatear como desees
+                            resultadosDiv.appendChild(div);
+                        });
+                    } else {
+                        resultadosDiv.innerHTML = '<p>No se encontraron resultados.</p>';
+                    }
+                });
+        });
+    </script>
+
 </body>
 </html>

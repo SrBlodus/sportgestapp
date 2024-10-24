@@ -47,6 +47,16 @@
                 </select>
             </div>
 
+           <div class="form-group">
+                <label for="nacionalidad">Pais Origen de Documento:</label>
+                <select name="nacionalidad" id="nacionalidad" class="form-control" required>
+                    <option value="" disabled selected>Seleccionar Pais</option> <!-- Opción vacía por defecto -->
+                    {% for nacionalidad in nacionalidades %}
+                        <option value="{{ nacionalidad.id }}">{{ nacionalidad.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <div class="form-group">
                 <label for="nro_documento">Número de Documento:</label>
                 <input type="text" id="nro_documento" name="nro_documento" class="form-control" value="{{ request.form.get('nro_documento', '') }}" required>
@@ -98,25 +108,17 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="nacionalidad">Nacionalidad:</label>
-                <select name="nacionalidad" id="nacionalidad" class="form-control" required>
-                    <option value="" disabled selected>Selecciona una nacionalidad</option> <!-- Opción vacía por defecto -->
-                    {% for nacionalidad in nacionalidades %}
-                        <option value="{{ nacionalidad.id }}">{{ nacionalidad.nombre }}</option>
-                    {% endfor %}
-                </select>
-            </div>
 
             <!-- Sección de tipos de persona -->
-            <label>Tipos de Persona:</label><br>
-            {% for tipo in tipos_persona %}
+
+           <label>Tipos de Persona:</label><br>
+           {% for tipo in tipos_persona %}
                 <div class="form-check">
                     <input type="checkbox" class="form-check-input" name="tipos_persona" value="{{ tipo.id }}" id="tipo-{{ tipo.id }}"
-                    {% if tipo.id in request.form.getlist('tipos_persona') %}checked{% endif %}>
+                    {% if tipo.id in tipos_persona_seleccionados %}checked{% endif %}>
                     <label class="form-check-label" for="tipo-{{ tipo.id }}">{{ tipo.nombre }}</label>
                 </div>
-            {% endfor %}
+           {% endfor %}
 
             <button type="submit" class="btn btn-primary">Registrar</button>
         </div>
